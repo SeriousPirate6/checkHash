@@ -3,7 +3,7 @@
 @REM -
 @REM Constants
 @REM -
-set sub=Output
+set sub=%cd%\Output
 set loc=location.txt
 set hash_fs=full_hash_s.txt
 set hash_ss=slim_hash_s.txt
@@ -63,8 +63,10 @@ if exist %dest%\ (
 @REM -
 @REM Asking user for source path
 @REM -
-set /p "source=Directory to copy and get every file checked with hash MD5: "
+@REM set /p "source=Directory to copy and get every file checked with hash MD5: "
 
+
+set source=C:\Users\Pirat\Downloads\CheckHash\ciao
 
 
 @REM -
@@ -74,7 +76,7 @@ if not exist "%source%" (
     echo The path entered does not exists.
     goto :end
 ) else (
-    FOR /F "delims=|" %%A IN ("%source%") do set s_folder="%%~nxA"
+    FOR /F "delims=|" %%A IN ("%source%") do set s_folder=%%~nxA
 )
 
 
@@ -94,8 +96,10 @@ type NUL > %sub%_%s_folder%\%hash_ss%
 type NUL > %sub%_%s_folder%\%hash_fd%
 type NUL > %sub%_%s_folder%\%hash_sd%
 
+echo %sub%_%s_folder%\%hash_sd%
 
 cd %source%
+echo %cd%
 
 setlocal disableDelayedExpansion
 
@@ -104,37 +108,46 @@ setlocal disableDelayedExpansion
 @REM Looping through all files in the given path recursively, and extract the relative path of each of them
 @REM -
 for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
+    set "file=%%~a"
     @REM -
     @REM Getting the MD5 hash of all files in the selected directory
     @REM -
-    certutil -hashfile "%%~pnxa" MD5 >> %sub%_%s_folder%\%hash_fs%
+    setlocal enableDelayedExpansion
+    echo -
+    echo !file:~2!
+    echo -
+    certutil -hashfile "!file:~2!" MD5 >> %sub%_%s_folder%\%hash_fs%
     @REM -
     @REM error 0 represents the ordinary execution of the command
     @REM -
     if errorlevel 0 (
-        echo Checksum completed!                        %%~pnxa
+        echo SOURCE:    Checksum completed                        %source%\!file:~2!
         echo -
     ) else (
         echo ->> %sub%_%s_folder%\%hash_fs%
-        echo Cannot perform the checksum on this file!  %%~pnxa
+        echo SOURCE:    Cannot perform the checksum on this file  %source%\!file:~2!
         echo -
     )
-    :1
-    set "file=%%~a"
-    setlocal enableDelayedExpansion
     @REM -
     @REM Performing xcopy of the current file in the dest folder
     @REM Piping F into the xcopy command line to select file by default
     @REM -
-    echo F|xcopy /S /Y /F %source%\!file:~2! %dest%\%s_folder%\!file:~2!
+    :1
+    echo F|xcopy /S /Y /F "%source%\!file:~2!" "%dest%\%s_folder%\!file:~2!" > nul
+    echo Copy completed!
+    echo -
     certutil -hashfile "%dest%\%s_folder%\!file:~2!" MD5 >> %sub%_%s_folder%\%hash_fd%
     if errorlevel 0 (
-        @REM echo Checksum completed!                        %%G
-        @REM echo -
+        echo DEST:      Checksum completed                        %dest%\%s_folder%\!file:~2!
+        echo -
     ) else (
-        @REM echo ->> %sub%_%s_folder%\%hash_f%
-        @REM echo Cannot perform the checksum on this file!  %%G
-        @REM echo -
+        echo ->> %sub%_%s_folder%\%hash_fd%
+        echo DEST:      Cannot perform the checksum on this file  %dest%\%s_folder%\!file:~2!
+        echo -
+        del "%dest%\%s_folder%\!file:~2!"
+        echo Deleting %dest%\%s_folder%\!file:~2! because the file is corrupted!
+        echo -
+        goto 1
     )
     endlocal
 )
