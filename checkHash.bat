@@ -31,7 +31,7 @@ set /p dest=< "%loc%"
 @REM -
 @REM Checking if location.txt is empty
 @REM -
-if [%dest%]==[] (
+if ["%dest%"]==[] (
     echo Location file is empty, you need to specify a path in which you want to copy your files.
     goto :end
 )
@@ -60,11 +60,11 @@ if exist "%dest%"\ (
 @REM -
 @REM Asking user for source path
 @REM -
-@REM set /p "source=Directory to copy and get every file checked with hash MD5: "
+set /p "source=Directory to copy and get every file checked with hash MD5: "
 @REM -
 @REM Fixed path example (debug use only)
 @REM -
-set source=C:\Users\Pirat\Downloads\Cannibal Corpse - 2006 - Kill (24bit-96kHz)
+@REM set source=C:\Users\User\ExampleFolder
 
 
 @REM -
