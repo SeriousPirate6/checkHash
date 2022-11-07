@@ -16,16 +16,16 @@ set sub=%cd%\[HashedFiles]-
 @REM -
 @REM Creating location.txt file if not existent
 @REM -
-if not exist %loc% (
+if not exist "%loc%" (
     echo Creating location file...
-    type NUL > %loc%
+    type NUL > "%loc%"
 )
 
 
 @REM -
 @REM Reading from file location.txt
 @REM -
-set /p dest=< %loc%
+set /p dest=< "%loc%"
 
 
 @REM -
@@ -40,9 +40,9 @@ if [%dest%]==[] (
 @REM -
 @REM Cheking if destination path is valid
 @REM -
-if exist %dest%\ (
+if exist "%dest%"\ (
     goto :start
-) else if exist %dest% (
+) else if exist "%dest%" (
     echo The path entered correspond to a file. It must correspond to a folder.
     goto :end
 ) else (
@@ -60,11 +60,11 @@ if exist %dest%\ (
 @REM -
 @REM Asking user for source path
 @REM -
-set /p "source=Directory to copy and get every file checked with hash MD5: "
+@REM set /p "source=Directory to copy and get every file checked with hash MD5: "
 @REM -
 @REM Fixed path example (debug use only)
 @REM -
-@REM set source=C:\Users\Pirat\Downloads\CheckHash\ciao
+set source=C:\Users\Pirat\Downloads\Cannibal Corpse - 2006 - Kill (24bit-96kHz)
 
 
 @REM -
@@ -76,21 +76,21 @@ if not exist "%source%" (
 ) else (
     FOR /F "delims=|" %%A IN ("%source%") do set s_folder=%%~nxA
 )
-echo %s_folder%
+echo "%s_folder%"
 
 @REM -
 @REM Checking subfolder existance
 @REM -
-if not exist "%sub%%s_folder%\" mkdir %sub%%s_folder%
+if not exist "%sub%%s_folder%"\ mkdir "%sub%%s_folder%"
 
 
 @REM -
 @REM Creating hash files
 @REM -
-type NUL > "%sub%%s_folder%\%hash_fs%"
-type NUL > "%sub%%s_folder%\%hash_s%"
-type NUL > "%sub%%s_folder%\%hash_fd%"
-type NUL > "%sub%%s_folder%\%hash_d%"
+type NUL > "%sub%%s_folder%"\"%hash_fs%"
+type NUL > "%sub%%s_folder%"\"%hash_s%"
+type NUL > "%sub%%s_folder%"\"%hash_fd%"
+type NUL > "%sub%%s_folder%"\"%hash_d%"
 
 
 @REM -
@@ -108,8 +108,8 @@ setlocal disableDelayedExpansion
 @REM Looping through all files in the given path recursively, and extract the relative path of each of them
 @REM -
 for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
-    set "file=%%~a"
-    set "size=%%~za"
+    set file=%%~a
+    set size=%%~za
     @REM -
     @REM Getting the MD5 hash of all files in the selected directory
     @REM -
@@ -118,16 +118,16 @@ for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
     echo !file:~2!  -  !size! byte
     echo -
     if !size! gtr 0 (
-        certutil -hashfile "!file:~2!" MD5 >> "%sub%%s_folder%\%hash_fs%"
+        certutil -hashfile "!file:~2!" MD5 > %sub%"%s_folder%"\%hash_fs%
         @REM -
         @REM error 0 represents the ordinary execution of the command
         @REM -
         if errorlevel 0 (
-            echo SOURCE:    Checksum completed                        %source%\!file:~2!
+            echo SOURCE:    Checksum completed                        "%source%"\"!file:~2!"
             echo -
         ) else (
-            echo ->> "%sub%%s_folder%\%hash_fs%"
-            echo SOURCE:    Cannot perform the checksum on this file  %source%\!file:~2!
+            echo ->> %sub%"%s_folder%"\%hash_fs%
+            echo SOURCE:    Cannot perform the checksum on this file  "%source%"\"!file:~2!"
             echo -
         )
         @REM -
@@ -135,19 +135,19 @@ for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
         @REM Piping F into the xcopy command line to select file by default
         @REM -
         :1
-        echo F|xcopy /S /Y /F "%source%\!file:~2!" "%dest%\%s_folder%\!file:~2!" > nul
+        echo F|xcopy /S /Y /F "%source%"\"!file:~2!" "%dest%"\"%s_folder%"\"!file:~2!" > nul
         echo Copy completed!
         echo -
-        certutil -hashfile "%dest%\%s_folder%\!file:~2!" MD5 >> "%sub%%s_folder%\%hash_fd%"
+        certutil -hashfile "%dest%"\"%s_folder%"\"!file:~2!" MD5 > "%sub%%s_folder%"\"%hash_fd%"
         if errorlevel 0 (
-            echo DEST:      Checksum completed                        %dest%\%s_folder%\!file:~2!
+            echo DEST:      Checksum completed                        "%dest%"\"%s_folder%"\"!file:~2!"
             echo -
         ) else (
-            echo ->> "%sub%%s_folder%\%hash_fd%"
-            echo DEST:      Cannot perform the checksum on this file  %dest%\%s_folder%\!file:~2!
+            echo ->> "%sub%%s_folder%"\"%hash_fd%"
+            echo DEST:      Cannot perform the checksum on this file  "%dest%"\"%s_folder%"\"!file:~2!"
             echo -
-            del "%dest%\%s_folder%\!file:~2!" >  nul
-            echo Deleting %dest%\%s_folder%\!file:~2! because the file is corrupted!
+            del "%dest%"\"%s_folder%"\"!file:~2!" >  nul
+            echo Deleting "%dest%"\"%s_folder%"\"!file:~2!" because the file is corrupted!
             echo -
             goto 1
         )
@@ -165,14 +165,14 @@ for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
         @REM Check if source and destination hashes of the file are equals
         @REM -
         if not "!last_source_hash!"=="!last_dest_hash!" (
-            echo ->> "%sub%%s_folder%\%hash_fd%"
+            echo ->> "%sub%%s_folder%"\"%hash_fd%"
             echo The calculated hashes results do not match!
             echo -
             echo SOURCE HASH:    -   !last_source_hash!
             echo DEST   HASH:    -   !last_dest_hash! 
             echo -
-            del "%dest%\%s_folder%\!file:~2!" > nul
-            echo Deleting %dest%\%s_folder%\!file:~2! because the file is corrupted!
+            del "%dest%"\"%s_folder%"\"!file:~2!" > nul
+            echo Deleting "%dest%"\"%s_folder%"\"!file:~2!" because the file is corrupted!
             echo -
             goto 1
         )
@@ -184,15 +184,15 @@ for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
 @REM -
 @REM Deleting full_hash files
 @REM -
-del %sub%%s_folder%\%hash_fs%
-del %sub%%s_folder%\%hash_fd%
+del "%sub%%s_folder%"\"%hash_fs%"
+del "%sub%%s_folder%"\"%hash_fd%"
 
 
 @REM -
 @REM Saving the hashes of the list files themselves
 @REM -
-for /F "tokens=*" %%i in ('certutil -hashfile "%sub%%s_folder%\%hash_s%" MD5 ^| findstr /V ":"') do set source_hash=%%i
-for /F "tokens=*" %%i in ('certutil -hashfile "%sub%%s_folder%\%hash_d%" MD5 ^| findstr /V ":"') do set dest_hash=%%i
+for /F "tokens=*" %%i in ('certutil -hashfile "%sub%%s_folder%"\"%hash_s%" MD5 ^| findstr /V ":"') do set source_hash=%%i
+for /F "tokens=*" %%i in ('certutil -hashfile "%sub%%s_folder%"\"%hash_d%" MD5 ^| findstr /V ":"') do set dest_hash=%%i
 
 
 @REM -
@@ -201,9 +201,7 @@ for /F "tokens=*" %%i in ('certutil -hashfile "%sub%%s_folder%\%hash_d%" MD5 ^| 
 @REM -
 if "%source_hash%"=="%dest_hash%" (
     echo -
-    echo The copy is completed, the files are all checked!
-    echo -
-    echo HASHES RESULTS of the list of all hashed files ^^-^^ :
+    echo Copy completed, the files are ALL CHECKED!
     echo -
     echo SOURCE:    %source_hash%
     echo DEST:      %dest_hash%
@@ -214,7 +212,7 @@ if "%source_hash%"=="%dest_hash%" (
 @REM -
 @REM Back to the initial working directory
 @REM -
-cd %curdir%
+cd "%curdir%"
 
 
 @REM -
@@ -226,4 +224,4 @@ cd %curdir%
 @REM -
 @REM Prevents to wipe out the console
 @REM -
-cmd /k
+pause>nul
