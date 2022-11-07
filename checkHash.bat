@@ -94,7 +94,12 @@ type NUL > "%sub%%s_folder%"\"%hash_d%"
 
 
 @REM -
+@REM Setting the source disk as the current working disk
+@REM -
+%source:~0,1%:
+@REM -
 @REM Assigning the source folder as working directory
+@REM -
 cd "%source%"
 echo -
 echo Changed directory to: %cd%
@@ -107,7 +112,7 @@ setlocal disableDelayedExpansion
 @REM -
 @REM Looping through all files in the given path recursively, and extract the relative path of each of them
 @REM -
-for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c echo @relpath"') do (
+for /f "tokens=*" %%a in ('forfiles /s /m *.* /c "cmd /c if @isdir==FALSE echo @relpath"') do (
     set file=%%~a
     set size=%%~za
     @REM -
