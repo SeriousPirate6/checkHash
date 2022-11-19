@@ -211,13 +211,17 @@ if "%source_hash%"=="%dest_hash%" (
     echo SOURCE:    %source_hash%
     echo DEST:      %dest_hash%
     echo -
+    
+    @REM -
+    @REM Back to the initial working directory
+    @REM -
+    cd "%curdir%"
+
+    @REM -
+    @REM Deleting source directory and all its concent
+    @REM -
+    rmdir /s /q "%source%"
 )
-
-
-@REM -
-@REM Back to the initial working directory
-@REM -
-cd "%curdir%"
 
 
 @REM -
