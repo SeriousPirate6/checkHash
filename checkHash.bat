@@ -79,6 +79,47 @@ if not exist "%source%" (
 echo "%s_folder%"
 
 @REM -
+@REM Getting free space on destination disk
+@REM -
+for /f "usebackq tokens=3" %%s in (`DIR %dest:~0,1%:\ /-C /-O /W`) do set fs=%%s
+
+
+@REM -
+@REM Getting source folder size
+@REM -
+for /F "delims=: tokens=2*" %%i in (
+    'powershell -command "Get-ChildItem -Recurse -LiteralPath '%source%' | Measure-Object -Sum Length" ^| findstr "Sum"'
+) do set sum=%%i
+
+
+@REM -
+@REM Since the numbers variables are supported as far as 32 bit, the sizes are approximated by cutting off the last 3 digits
+@REM -
+@REM Dividing by 1049 and not 1024 to balance the division by 1000 applied by substring
+@REM -
+@REM Considering 1GB less of space from the disk for safety reason
+@REM -
+set /a free_space=%fs:~0,-3% / 1049 - 1024
+set /a folder_size=%sum:~0,-3% / 1049
+echo -
+echo Checking folders sizes...
+echo -
+echo Source folder size:    MB  %folder_size%
+echo Free space in disk:    MB  %free_space%
+
+
+@REM -
+@REM Checking if the destination disk free space is greater than the source folder size
+@REM -
+if %folder_size% gtr %free_space% (
+    echo -
+    echo Not enough free space in the disk, can't execute the copy!
+    echo -
+    goto :end
+)
+
+
+@REM -
 @REM Checking subfolder existance
 @REM -
 if not exist "%sub%%s_folder%"\ mkdir "%sub%%s_folder%"
@@ -212,6 +253,10 @@ if "%source_hash%"=="%dest_hash%" (
     echo DEST:      %dest_hash%
     echo -
     
+    @REM -
+    @REM Setting the source disk as the current working disk
+    @REM -
+    %curdir:~0,1%:
     @REM -
     @REM Back to the initial working directory
     @REM -
